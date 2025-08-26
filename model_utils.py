@@ -43,20 +43,7 @@ class AttentionLayer(nn.Module):
         k = k.view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
         v = v.view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
 
-        # k = (B, num_heads, T, head_dim) -> (B, num_heads, head_dim, T)
-        # attn = (B, num_heads, T, T)
-
-        attn = (q @ k.transpose(-2, -1)) / math.sqrt(self.head_dim)
-        attn = attn.masked_fill(self.mask[:, :, :T, :T] == 0, float("-inf"))
-        attn = F.softmax(attn, dim=-1)
-
-        attn = self.dropout(attn)
-
-        res = attn @ v
-        res = res.transpose(1, 2).contiguous().view(B, T, C)
-        res = self.proj(res)
-
-        return self.dropout(res)
+        # k = (B, num_heads, Tpip install .
 
 
 class FastAttentionLayer(nn.Module):
@@ -89,14 +76,6 @@ class FastAttentionLayer(nn.Module):
 
         return self.dropout(res)
 
-
-class SwiGLU(nn.Module):
-    def forward(self, x):
-        assert x.shape[-1] % 2 == 0
-
-        x1, x2 = x.chunk(2, dim=-1)
-
-        return x1 * F.silu(x2)
 
 
 class MLP(nn.Module):
